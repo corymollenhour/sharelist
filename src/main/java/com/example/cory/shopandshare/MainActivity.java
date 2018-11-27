@@ -1,5 +1,6 @@
 package com.example.cory.shopandshare;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -9,13 +10,18 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import org.json.JSONObject;
 import java.net.*;
+
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -24,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> items;
     private ArrayAdapter<String> itemsAdapter;
     private ListView lvItems;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,30 +63,49 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "hello", Toast.LENGTH_LONG).show();
             }
         });
+
+        //Add item on submit
+        EditText editText = (EditText) findViewById(R.id.etNewItem);
+        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    onAddItem(v);
+                    closeKeyboard();
+                    handled = true;
+                }
+                return handled;
+            }
+        });
     }
 
+    //Adds item to list
     public void onAddItem(View v) {
         EditText etNewItem = (EditText) findViewById(R.id.etNewItem);
         String itemText = etNewItem.getText().toString();
         itemsAdapter.add(itemText);
         etNewItem.setText("");
     }
+    //Close Keyboard on submit
+    private void closeKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds listItem to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -87,7 +114,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testFunc(){
-
         HttpRequest httpRequest = new HttpRequest();
         try {
             httpRequest.sendGet();
